@@ -204,9 +204,9 @@ yolov8 基于 Backbone、PAN-FPN、Decoupled-Head、Anchor-Free、损失函数�
   <img src="images/image-20231025030706883.png" alt="image-20231025030706883" style="zoom:150%;" align="center" />      
   
 - **匹配策略**：这里正负样本匹配策略采用的是Task-Aligned Assigner，也即对齐分配器，公式如下：        
-  $$ t=s^\alpha \cdot u^\beta $$  
+  $t=s^\alpha \cdot u^\beta$  
   
-  - 其中，S是GT的预测分值，U是预测框和GT Box的iou，$\alpha$和$\beta$为权重超参数，两者相乘就可以衡量对齐程度，当Cls的分值越高且IOU越高时，t的值就越接近于1
+  - 其中，S是GT的预测分值，U是预测框和GT Box的iou，$\alpha$ 和 $\beta$ 为权重超参数，两者相乘就可以衡量对齐程度，当Cls的分值越高且IOU越高时，t的值就越接近于1
   
 - **损失函数**：损失函数包括两个分支，CIs与Box Reg；其中分类损失采用了BCE损失:        
   $loss(y, \hat{y}) = -\frac{1}{n} \sum_i\big[{(y^{(i)} \log \hat{y}^{(i)}) + (1 -t^{(i)}) \log(1 -\hat{y}^{(i)})}\big]$
