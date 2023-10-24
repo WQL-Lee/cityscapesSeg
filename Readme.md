@@ -198,10 +198,10 @@ python predict.py
 `yolov8` 基于 `Backbone`、`PAN-FPN`、`Decoupled-Head`、`Anchor-Free`、损失函数、样本匹配 这几个模块进行了改进。模型的 **Backbone、Decoupled-Head、匹配策略、损失函数** 采用了如下方法：    
 
 - **Backbone**: 这里使用的仍然是CSP的思想，不过将C3模块替换成了C2f模块（block数从3-6-9-3改为3-6-6-3），增加了更多的跳跃连接和split操作，实现了进一步的轻量化，同时也保留了SPPF模块。
-   ![image-20231025031201593](images/image-20231025031201593.png) 
+   &emsp;&emsp;![image-20231025031201593](images/image-20231025031201593.png) 
   
 - **Decoupled-Head**：从耦合头变为了解耦头，分类和回归分为两个分支分别进行；这源于YoloX，即分类与回归两个任务的head不再共享参数
-  ![image-20231025030706883](images/image-20231025030706883.png)            
+ &emsp;&emsp;![image-20231025030706883](images/image-20231025030706883.png)            
   
 - **匹配策略**：这里正负样本匹配策略采用的是Task-Aligned Assigner，也即对齐分配器，公式如下：        
   $t=s^\alpha \cdot u^\beta$  
