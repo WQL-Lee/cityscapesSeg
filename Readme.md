@@ -35,7 +35,7 @@ pip install -r requirements.txt
 
 - 数据集下载：
 
-​			本次项目采用的数据集由oneAPI官方指定，为[cityscapes城市景观数据集](https://www.cityscapes-dataset.com/)，包含了高清城市场景图像用于语义分割任务。其中我们选取了gtFine_trainvaltest和leftImg8bit_trainvaltest两类数据用于训练和测试，里面分别包括了30类对象（行人、摩托车、卡车、汽车、桥、围栏等）的1525和5000幅图像。如下图所示：
+​			本次项目采用的数据集由oneAPI官方指定，为[cityscapes城市景观数据集](https://www.cityscapes-dataset.com/)，包含了高清城市场景图像用于语义分割任务。其中我们选取了`gtFine_trainvaltest`和`leftImg8bit_trainvaltest`两类数据用于训练和测试，里面分别包括了30类对象（行人、摩托车、卡车、汽车、桥、围栏等）的1525和5000幅图像。如下图所示：
 
 关于数据集如何进行下载，可参考博客：[cityscapes数据集的下载和应用](https://blog.csdn.net/zisuina_2/article/details/116302128)
 
@@ -86,11 +86,11 @@ python predict.py
 
 ### 原数据集        
 
-本次项目采用的数据集由oneAPI官方指定，为cityscapes城市景观数据集，包含了高清城市场景图像用于语义分割任务。其中我们选取了gtFine_trainvaltest和leftImg8bit_trainvaltest两类数据用于训练和测试，里面分别包括了30类对象（行人、摩托车、卡车、汽车、桥、围栏等）的1525和5000幅图像。如下图所示：        
+本次项目采用的数据集由`oneAPI`官方指定，为`cityscapes`城市景观数据集，包含了高清城市场景图像用于语义分割任务。其中我们选取了`gtFine_trainvaltest`和`leftImg8bit_trainvaltest`两类数据用于训练和测试，里面分别包括了30类对象（行人、摩托车、卡车、汽车、桥、围栏等）的1525和5000幅图像。如下图所示：        
         
 ### 数据集转换        
 
-&emsp;&emsp; 由于我们采用了yolov8n作为基础模型，城市景观数据集需要转换为yolo数据集格式才能使用。Yolo标注格式如下所示：        
+&emsp;&emsp; 由于我们采用了`yolov8n`作为基础模型，城市景观数据集需要转换为`yolo`数据集格式才能使用。Yolo标注格式如下所示：        
         
 ```
 <object-class> <x> <y> <width> <height>
@@ -103,7 +103,7 @@ python predict.py
 0 0.412500 0.318981 0.358333 0.636111
 ```
 
-&emsp;&emsp; 我们首先对城市数据景观数据集标签格式转成coco数据集格式，然后对所有图像进行了归一化处理，以便网络模型能够更好地处理图像数据，最后再将其转为yolo格式。    
+&emsp;&emsp; 我们首先对城市数据景观数据集标签格式转成`coco`数据集格式，然后对所有图像进行了归一化处理，以便网络模型能够更好地处理图像数据，最后再将其转为`yolo`格式。    
 #### 数据集 coco->yolo的转换：        
 
 1. 创建image-dict        
@@ -193,20 +193,20 @@ python predict.py
 
 # Yolo模型介绍及改进        
 
-&emsp;&emsp; 模型上，由于Yolo属于单阶段(1-stage)检测模型，能够使用单一网络便同时完成定位与分类，具有简洁、高效、速度快的特性，且具有不错的识别效果。因此，我们采用yolo的改进版本**yolov8n**作为我们的基础模型。yolov8是 ultralytics 公司在 2023 年 1月 10 号开源的 YOLOv5 的下一个重大更新版本，它不仅支持图像分类，还支持物体检测和实例分割任务。由于其是基于yolo进行改进，它具有单阶段模型所具有的推理速度快的特性，并且能够有较高的准确度。        
+&emsp;&emsp; 模型上，由于`Yolo`属于单阶段`(1-stage)`检测模型，能够使用单一网络便同时完成定位与分类，具有简洁、高效、速度快的特性，且具有不错的识别效果。因此，我们采用yolo的改进版本**yolov8n**作为我们的基础模型。`yolov8`是 ultralytics 公司在 2023 年 1月 10 号开源的 `yolov5 `的下一个重大更新版本，它不仅支持图像分类，还支持物体检测和实例分割任务。由于其是基于yolo进行改进，它具有单阶段模型所具有的推理速度快的特性，并且能够有较高的准确度。        
         
-yolov8 基于 Backbone、PAN-FPN、Decoupled-Head、Anchor-Free、损失函数、样本匹配 这几个模块进行了改进。模型的 **Backbone、Decoupled-Head、匹配策略、损失函数** 采用了如下方法：    
+`yolov8` 基于 `Backbone`、`PAN-FPN`、`Decoupled-Head`、`Anchor-Free`、损失函数、样本匹配 这几个模块进行了改进。模型的 **Backbone、Decoupled-Head、匹配策略、损失函数** 采用了如下方法：    
 
 - **Backbone**: 这里使用的仍然是CSP的思想，不过将C3模块替换成了C2f模块（block数从3-6-9-3改为3-6-6-3），增加了更多的跳跃连接和split操作，实现了进一步的轻量化，同时也保留了SPPF模块。    
-  <img src="images/image-20231025031201593.png" alt="image-20231025031201593" style="zoom:150%;" align="center"/> 
+  <img src="images/image-20231025031201593.png" alt="image-20231025031201593" style="zoom:100%;" align="center"/> 
   
 - **Decoupled-Head**：从耦合头变为了解耦头，分类和回归分为两个分支分别进行；这源于YoloX，即分类与回归两个任务的head不再共享参数        
-  <img src="images/image-20231025030706883.png" alt="image-20231025030706883" style="zoom:150%;" align="center" />      
+  <img src="images/image-20231025030706883.png" alt="image-20231025030706883" style="zoom:100%;" align="center" />      
   
 - **匹配策略**：这里正负样本匹配策略采用的是Task-Aligned Assigner，也即对齐分配器，公式如下：        
   $t=s^\alpha \cdot u^\beta$  
   
-  - 其中，S是GT的预测分值，U是预测框和GT Box的iou，$\alpha$ 和 $\beta$ 为权重超参数，两者相乘就可以衡量对齐程度，当Cls的分值越高且IOU越高时，t的值就越接近于1
+  - 其中，S是GT的预测分值，U是预测框和GT Box的iou, $\alpha$ 和 $\beta$ 为权重超参数，两者相乘就可以衡量对齐程度，当Cls的分值越高且IOU越高时，t的值就越接近于1
   
 - **损失函数**：损失函数包括两个分支，CIs与Box Reg；其中分类损失采用了BCE损失:        
   $loss(y, \hat{y}) = -\frac{1}{n} \sum_i\big[{(y^{(i)} \log \hat{y}^{(i)}) + (1 -t^{(i)}) \log(1 -\hat{y}^{(i)})}\big]$
