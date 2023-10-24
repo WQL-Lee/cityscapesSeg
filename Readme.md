@@ -209,16 +209,10 @@ yolov8 基于 Backbone、PAN-FPN、Decoupled-Head、Anchor-Free、损失函数�
   - 其中，S是GT的预测分值，U是预测框和GT Box的iou，$\alpha$和$\beta$为权重超参数，两者相乘就可以衡量对齐程度，当Cls的分值越高且IOU越高时，t的值就越接近于1
   
 - **损失函数**：损失函数包括两个分支，CIs与Box Reg；其中分类损失采用了BCE损失:        
-  $$
-  
-![](http://latex.codecogs.com/svg.latex?loss(y, \hat{y}) = -\frac{1}{n} \sum_i\big[{(y^{(i)} \log \hat{y}^{(i)}) + (1 -t^{(i)}) \log(1 -\hat{y}^{(i)})}\big])
-  $$
+  $loss(y, \hat{y}) = -\frac{1}{n} \sum_i\big[{(y^{(i)} \log \hat{y}^{(i)}) + (1 -t^{(i)}) \log(1 -\hat{y}^{(i)})}\big]$
   
   而位置损失分为了两个部分：CIou_Loss + Distribution Focal Loss；第一部分是计算预测框与目标框之间的IOU，这里采用了CIou Loss，第二部分采用DFL；        
-  $$
-  ![](http://latex.codecogs.com/svg.latex?DFL(S_i, S_{i+1})= -\big[(y_{i+1} - y)\log(S_i) + (y-y_i)\log(S_{i+1})\big])
-  
-  $$
+  $DFL(S_i, S_{i+1})= -\big[(y_{i+1} - y)\log(S_i) + (y-y_i)\log(S_{i+1})\big]$
   
   - DFL 能够让网络更快地聚焦于目标y附近的值，增大它们的概率。        
         
