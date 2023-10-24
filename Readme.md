@@ -210,12 +210,14 @@ yolov8 基于 Backbone、PAN-FPN、Decoupled-Head、Anchor-Free、损失函数�
   
 - **损失函数**：损失函数包括两个分支，CIs与Box Reg；其中分类损失采用了BCE损失:        
   $$
-  loss(y, \hat{y}) = -\frac{1}{n} \sum_i\big[{(y^{(i)} \log \hat{y}^{(i)}) + (1 -t^{(i)}) \log(1 -\hat{y}^{(i)})}\big]
+  
+![](http://latex.codecogs.com/svg.latex?loss(y, \hat{y}) = -\frac{1}{n} \sum_i\big[{(y^{(i)} \log \hat{y}^{(i)}) + (1 -t^{(i)}) \log(1 -\hat{y}^{(i)})}\big])
   $$
   
   而位置损失分为了两个部分：CIou_Loss + Distribution Focal Loss；第一部分是计算预测框与目标框之间的IOU，这里采用了CIou Loss，第二部分采用DFL；        
   $$
-  DFL(S_i, S_{i+1})= -\big[(y_{i+1} - y)\log(S_i) + (y-y_i)\log(S_{i+1})\big]
+  ![](http://latex.codecogs.com/svg.latex?DFL(S_i, S_{i+1})= -\big[(y_{i+1} - y)\log(S_i) + (y-y_i)\log(S_{i+1})\big])
+  
   $$
   
   - DFL 能够让网络更快地聚焦于目标y附近的值，增大它们的概率。        
