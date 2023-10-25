@@ -204,14 +204,15 @@ python predict.py
 
 &emsp;&emsp; 模型上，由于`yolo`属于单阶段`(1-stage)`检测模型，能够使用单一网络便同时完成定位与分类，具有简洁、高效、速度快的特性，且具有不错的识别效果。因此，我们采用`yolo`的改进版本**yolov8n**作为我们的基础模型。`yolov8`是` ultralytics `公司在 2023 年 1月 10 号开源的 YOLOv5 的下一个重大更新版本，它不仅支持图像分类，还支持物体检测和实例分割任务。由于其是基于yolo进行改进，它具有单阶段模型所具有的推理速度快的特性，并且能够有较高的准确度。      `yolov8 `基于 **Backbone、PAN-FPN、Decoupled-Head、Anchor-Free、损失函数、样本匹配 **这几个模块进行了改进。模型的 **Backbone、Decoupled-Head、匹配策略、损失函数** 采用了如下方法：    
 
-- **Backbone**: 这里使用的仍然是CSP的思想，不过将C3模块替换成了`C2f`模块（block数从3-6-9-3改为3-6-6-3），增加了更多的跳跃连接和split操作，实现了进一步的轻量化，同时也保留了SPPF模块。    
-  <img src="images/image-20231025031201593.png" alt="image-20231025031201593" style="zoom: 80%;" align="center"/> 
+- **Backbone**: 这里使用的仍然是CSP的思想，不过将C3模块替换成了`C2f`模块（block数从3-6-9-3改为3-6-6-3），增加了更多的跳跃连接和split操作，实现了进一步的轻量化，同时也保留了SPPF模块。   
+ <img src="images/image-20231025031201593.png" alt="image-20231025031201593" style="zoom: 80%;" align="center" /> 
+    
   
 - **Decoupled-Head**：从耦合头变为了解耦头，分类和回归分为两个分支分别进行；这源于YoloX，即分类与回归两个任务的head不再共享参数        
   <img src="images/image-20231025030706883.png" alt="image-20231025030706883" style="zoom: 80%;" align="center" />      
   
 - **匹配策略**：这里正负样本匹配策略采用的是Task-Aligned Assigner，也即对齐分配器，公式如下：        
-  $$ t=s^\alpha \cdot u^\beta $$  
+$ t=s^\alpha \cdot u^\beta $
   
   - 其中，s是GT的预测分值，u是预测框和GT Box的iou，$\alpha$和$\beta$为权重超参数，两者相乘就可以衡量对齐程度，当Cls的分值越高且IOU越高时，t的值就越接近于1
   
