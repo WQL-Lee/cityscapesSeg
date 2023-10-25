@@ -78,7 +78,7 @@ python predict.py
 
 
 
-
+注：倘若想要更详细地查看模型结构，可以执行`run.ipynb`中的代码。
 
 
 
@@ -86,7 +86,7 @@ python predict.py
 
 - 原数据集        
 
-本次项目采用的数据集由oneAPI官方指定，为`cityscapes`城市景观数据集，包含了高清城市场景图像用于语义分割任务。其中我们选取了`gtFine_trainvaltest`和`leftImg8bit_trainvaltest`两类数据用于训练和测试，里面分别包括了30类对象（行人、摩托车、卡车、汽车、桥、围栏等）的1525和5000幅图像。如下图所示：        
+本次项目采用的数据集由oneAPI官方指定，为`cityscapes`城市景观数据集，包含了高清城市场景图像用于语义分割任务。其中我们选取了`gtFine_trainvaltest`和`leftImg8bit_trainvaltest`两类数据用于训练和测试，里面分别包括了30类对象（行人、摩托车、卡车、汽车、桥、围栏等）的1525和5000幅图像。   
         
 
 - 数据集转换        
@@ -194,7 +194,6 @@ python predict.py
     
 
 &emsp;&emsp;以上便是数据集格式的转变方式，通过调用上述函数，将路径名做简单的修改便可以对不同数据集进行格式转换。   
-        
 &emsp;&emsp;最终处理完成的数据集只包含image和label，如下所示：      
 &emsp;&emsp; ![image-20231025030633525](images/image-20231025030633525.png) 
     
@@ -203,9 +202,7 @@ python predict.py
 
 # Yolo模型介绍及改进        
 
-&emsp;&emsp; 模型上，由于`yolo`属于单阶段`(1-stage)`检测模型，能够使用单一网络便同时完成定位与分类，具有简洁、高效、速度快的特性，且具有不错的识别效果。因此，我们采用`yolo`的改进版本**yolov8n**作为我们的基础模型。`yolov8`是` ultralytics `公司在 2023 年 1月 10 号开源的 YOLOv5 的下一个重大更新版本，它不仅支持图像分类，还支持物体检测和实例分割任务。由于其是基于yolo进行改进，它具有单阶段模型所具有的推理速度快的特性，并且能够有较高的准确度。        
-        
-`yolov8 `基于 **Backbone、PAN-FPN、Decoupled-Head、Anchor-Free、损失函数、样本匹配 **这几个模块进行了改进。模型的 **Backbone、Decoupled-Head、匹配策略、损失函数** 采用了如下方法：    
+&emsp;&emsp; 模型上，由于`yolo`属于单阶段`(1-stage)`检测模型，能够使用单一网络便同时完成定位与分类，具有简洁、高效、速度快的特性，且具有不错的识别效果。因此，我们采用`yolo`的改进版本**yolov8n**作为我们的基础模型。`yolov8`是` ultralytics `公司在 2023 年 1月 10 号开源的 YOLOv5 的下一个重大更新版本，它不仅支持图像分类，还支持物体检测和实例分割任务。由于其是基于yolo进行改进，它具有单阶段模型所具有的推理速度快的特性，并且能够有较高的准确度。      `yolov8 `基于 **Backbone、PAN-FPN、Decoupled-Head、Anchor-Free、损失函数、样本匹配 **这几个模块进行了改进。模型的 **Backbone、Decoupled-Head、匹配策略、损失函数** 采用了如下方法：    
 
 - **Backbone**: 这里使用的仍然是CSP的思想，不过将C3模块替换成了`C2f`模块（block数从3-6-9-3改为3-6-6-3），增加了更多的跳跃连接和split操作，实现了进一步的轻量化，同时也保留了SPPF模块。    
   <img src="images/image-20231025031201593.png" alt="image-20231025031201593" style="zoom: 80%;" align="center"/> 
@@ -214,23 +211,25 @@ python predict.py
   <img src="images/image-20231025030706883.png" alt="image-20231025030706883" style="zoom: 80%;" align="center" />      
   
 - **匹配策略**：这里正负样本匹配策略采用的是Task-Aligned Assigner，也即对齐分配器，公式如下：        
-  $t=s^\alpha \cdot u^\beta$  
+  $$ t=s^\alpha \cdot u^\beta $$  
   
-  - 其中，S是GT的预测分值，U是预测框和GT Box的iou, $\alpha$ 和 $\beta$ 为权重超参数，两者相乘就可以衡量对齐程度，当Cls的分值越高且IOU越高时，t的值就越接近于1
+  - 其中，s是GT的预测分值，u是预测框和GT Box的iou，$\alpha$和$\beta$为权重超参数，两者相乘就可以衡量对齐程度，当Cls的分值越高且IOU越高时，t的值就越接近于1
   
 - **损失函数**：损失函数包括两个分支，CIs与Box Reg；其中分类损失采用了BCE损失:        
-  $loss(y, \hat{y}) = -\frac{1}{n} \sum_i\big[{(y^{(i)} \log \hat{y}^{(i)}) + (1 -t^{(i)}) \log(1 -\hat{y}^{(i)})}\big]$
   
-  而位置损失分为了两个部分：CIou_Loss + Distribution Focal Loss；第一部分是计算预测框与目标框之间的IOU，这里采用了CIou Loss，第二部分采用DFL；        
-  $DFL(S_i, S_{i+1})= -\big[(y_{i+1} - y)\log(S_i) + (y-y_i)\log(S_{i+1})\big]$
+  $loss(y, \hat{y}) = -\frac{1}{n} \sum_i\big[{(y^{(i)} \log \hat{y}^{(i)}) + (1 -y^{(i)}) \log(1 -\hat{y}^{(i)})}\big]$
+  
+  而位置损失分为了两个部分：CIou_Loss + Distribution Focal Loss；第一部分是计算预测框与目标框之间的IOU，这里采用了CIou Loss，第二部分采用DFL；   
+  
+  $DFL(S_i, S_{i+1})= -\big[(y_{i+1} - y)\log(S_i) + (y-y_i)\log(S_{i+1})\big]$     
   
   - DFL 能够让网络更快地聚焦于目标y附近的值，增大它们的概率。        
         
 ### 利用oneAPI里的Pytorch扩展 Intel(R) Extension for Pytorch 训练        
 
 &emsp;&emsp; Intel(R) Extension for Pytorch 针对命令模式（imperative mode)和图模式进行了优化，并针对Pytorch的三个关键模块：运算符、图和运行时 进行了优化，优化的运算符和内核通过 PyTorch 调度机制完成调用。在执行期间，面向 PyTorch* 的 Intel扩展将用扩展中优化的运算符覆盖 ATen 运算符的对应部分，并为常见的用例提供一组额外的自定义运算符和优化实现。在图模式下，扩展进一步应用图优化，以最大限度地提升内核的执行性能。运行时优化封装在运行时扩展模块中，该模块可为用户提供几个 PyTorch 前端 API，以便对线程运行时进行更精细化的控制。           
-        
 &emsp;&emsp;IPEX的使用非常方便，仅仅只需一条指令便能够完成模型优化：        
+
 ```
 import intel_extension_for_pytorch as ipex
 self.model, self.optimizer) = ipex.optimize(self.model, optimizer=self.optimizer)
@@ -260,17 +259,15 @@ self.model = quantization.fit(self.model,
 ```
 ### Neural-Coder————Visual Studio Code Extension
 &emsp;&emsp;为了进一步简化开发者的开发流程，Intel推出了一款一键式、无代码解决方案 Intel(R) Neural Coder。 Neural Coder是Neural Compressor下的新组件，通过一键式设备切换和优化启动自动代码更改，无需在深度学习脚本中进行基于CUDA的硬编码便可以进一步简化深度学习模型的部署。这一组件不仅可以优化这些脚本的性能，还能针对这些优化进行基准测试，进而提供合适的部署方案。        
-&emsp;&emsp; Neural Coder采用了静态程序分析技术和启发式优化规则，简化各种深度学习优化api的使用，以提高AI模型的计算效率，改善一般AI客户的用户体验。        
-        
-&emsp;&emsp;Neural-Coder的使用方式通常有以下三种：**Jupyter Lab Extension/Visual Studio Code Extension、Python Launcher、Python API**，这里我们采用了VSCode Extension的方式：        
-        
-&emsp;&emsp;1. 在服务器安装Neural-Coder：  
-        
-&emsp;&emsp; ![image-20231025035203619](images/image-20231025035203619.png)        
-&emsp;&emsp;2. 设置路径：            
-        
-&emsp;&emsp; ![image-20231025035154984](images/image-20231025035154984.png)        
-&emsp;&emsp;3. 最后在代码右上角图标中选择INC Auto Enable Benchmark运行程序    
+&emsp;&emsp; Neural Coder采用了静态程序分析技术和启发式优化规则，简化各种深度学习优化api的使用，以提高AI模型的计算效率，改善一般AI客户的用户体验。      Neural-Coder的使用方式通常有以下三种：**Jupyter Lab Extension/Visual Studio Code Extension、Python Launcher、Python API**，这里我们采用了VSCode Extension的方式：       
+
+1. 在服务器安装Neural-Coder：  
+           
+   &emsp;&emsp; ![image-20231025035203619](images/image-20231025035203619.png)        
+2.  设置路径：            
+           
+   &emsp;&emsp; ![image-20231025035154984](images/image-20231025035154984.png)        
+3. . 最后在代码右上角图标中选择INC Auto Enable Benchmark运行程序    
 
 
 
@@ -289,14 +286,14 @@ self.model = quantization.fit(self.model,
   ![image-20231025030439070](images/image-20231025030439070.png)   
         
   
-- 我们选取了8个类别，并分别绘制了他们的F1-Confidence曲线和混淆矩阵：    
-  &emsp;&emsp;![md2](https://github.com/MZT-DW/-/assets/58621558/2c4f5a38-910e-434d-b342-a937c78a8d9e)
+- 我们选取了8个类别，并分别绘制了他们的F1-Confidence曲线和混淆矩阵：  
   
-- Precision-Recall 曲线以及Recall-Confidence 曲线：       
-&emsp;&emsp;![md1](https://github.com/MZT-DW/-/assets/58621558/76042939-f012-4784-bfc6-e4cf4604ce2d)    
-
+  ![277602885-2c4f5a38-910e-434d-b342-a937c78a8d9e](images/277602885-2c4f5a38-910e-434d-b342-a937c78a8d9e.jpg)  
+  Precision-Recall 曲线以及Recall-Confidence 曲线：       
+  &emsp;&emsp;![277602603-76042939-f012-4784-bfc6-e4cf4604ce2d](images/277602603-76042939-f012-4784-bfc6-e4cf4604ce2d.jpg)
+  
 - 模型对单张图片的平均验证时间：
-          
+        
 | preprocess time     | inference     | postprocess time     |
 | -------- | -------- | -------- |
 | 0.5ms | 2.2 ms | 0.6 ms |
