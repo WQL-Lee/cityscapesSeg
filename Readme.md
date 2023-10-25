@@ -263,10 +263,9 @@ self.model = quantization.fit(self.model,
 
 1. 在服务器安装Neural-Coder：  
            
-   &emsp;&emsp; ![image-20231025035203619](images/image-20231025035203619.png)        
+    ![image-20231025035203619](images/image-20231025035203619.png)        
 2.  设置路径：            
-           
-   &emsp;&emsp; ![image-20231025035154984](images/image-20231025035154984.png)        
+    ![image-20231025035154984](images/image-20231025035154984.png)        
 3. . 最后在代码右上角图标中选择INC Auto Enable Benchmark运行程序    
 
 
