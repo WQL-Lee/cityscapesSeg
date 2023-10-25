@@ -208,11 +208,12 @@ python predict.py
  <img src="images/image-20231025031201593.png" alt="image-20231025031201593" style="zoom: 80%;" align="center" /> 
     
   
-- **Decoupled-Head**：从耦合头变为了解耦头，分类和回归分为两个分支分别进行；这源于YoloX，即分类与回归两个任务的head不再共享参数        
+- **Decoupled-Head**：从耦合头变为了解耦头，分类和回归分为两个分支分别进行；这源于YoloX，即分类与回归两个任务的head不再共享参数      
+
   <img src="images/image-20231025030706883.png" alt="image-20231025030706883" style="zoom: 80%;" align="center" />      
   
 - **匹配策略**：这里正负样本匹配策略采用的是Task-Aligned Assigner，也即对齐分配器，公式如下：        
-$ t=s^\alpha \cdot u^\beta $
+$t=s^\alpha \cdot u^\beta$
   
   - 其中，s是GT的预测分值，u是预测框和GT Box的iou，$\alpha$和$\beta$为权重超参数，两者相乘就可以衡量对齐程度，当Cls的分值越高且IOU越高时，t的值就越接近于1
   
