@@ -262,13 +262,13 @@ self.model = quantization.fit(self.model,
 
 库导入：
 
-<img src="images/import.png" alt="import" style="zoom:80%;" align="left"/>
+<img src="images/import.png" alt="import" style="zoom:80%;" align="center"/>
 
 将模型封装在库neural compressor中：
 
-<img src="images/package1.png" alt="package1" style="zoom: 100%;" align="left" />
+<img src="images/package1.png" alt="package1" style="zoom: 100%;" align="center" />
 
-<img src="images/package2.png" alt="package2" style="zoom:130%;" align="left"/>
+<img src="images/package2.png" alt="package2" style="zoom:130%;" align="center"/>
 
 
 
