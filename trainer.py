@@ -22,6 +22,8 @@ from torch import nn, optim
 from torch.cuda import amp
 from torch.nn.parallel import DistributedDataParallel as DDP
 
+
+
 from ultralytics.cfg import get_cfg, get_save_dir
 from ultralytics.data.utils import check_cls_dataset, check_det_dataset
 from ultralytics.nn.tasks import attempt_load_one_weight, attempt_load_weights
@@ -40,6 +42,10 @@ from ultralytics.utils.plotting import plot_images, plot_labels, plot_results
 
 from models import DetectionModel,SegmentationModel
 from validator import DetectionValidator,SegmentationValidator
+
+import intel_extension_for_pytorch as ipex
+from neural_compressor.config import PostTrainingQuantConfig, AccuracyCriterion, TuningCriterion
+from neural_compressor import quantization
 
 
 class BaseTrainer:
@@ -309,10 +315,16 @@ class BaseTrainer:
             base_idx = (self.epochs - self.args.close_mosaic) * nb
             self.plot_idx.extend([base_idx, base_idx + 1, base_idx + 2])
         epoch = self.epochs  # predefine for resume fully trained model edge cases
+
+        # (self.model, self.optimizer) = ipex.optimize(self.model, optimizer=self.optimizer)
+        
+
         for epoch in range(self.start_epoch, self.epochs):
+            start =time.time()
             self.epoch = epoch
             self.run_callbacks('on_train_epoch_start')
             self.model.train()
+            
             if RANK != -1:
                 self.train_loader.sampler.set_epoch(epoch)
             pbar = enumerate(self.train_loader)
@@ -330,6 +342,7 @@ class BaseTrainer:
                 pbar = TQDM(enumerate(self.train_loader), total=nb)
             self.tloss = None
             self.optimizer.zero_grad()
+
             for i, batch in pbar:
                 self.run_callbacks('on_train_batch_start')
                 # Warmup
@@ -403,7 +416,18 @@ class BaseTrainer:
             self.epoch_time_start = tnow
             self.run_callbacks('on_fit_epoch_end')
             torch.cuda.empty_cache()  # clears GPU vRAM at end of epoch, can help with out of memory errors
-
+            self.model.eval()
+            # conf = PostTrainingQuantConfig(backend='ipex',
+            #                     accuracy_criterion = AccuracyCriterion(
+            #                         higher_is_better=True, 
+            #                         criterion='relative',  
+            #                         tolerable_loss=0.01))
+            
+            # self.model = quantization.fit(self.model,
+            #                 conf,
+            #                 calib_dataloader=self.train_loader,
+            #                eval_func=self.eval_func
+            #                 )
             # Early Stopping
             if RANK != -1:  # if DDP training
                 broadcast_list = [self.stop if RANK == 0 else None]
@@ -412,7 +436,9 @@ class BaseTrainer:
                     self.stop = broadcast_list[0]
             if self.stop:
                 break  # must break all DDP ranks
-
+        
+        print("*"*100)
+        print(f"Time Cost of Epoch: {time.time()-start}")
         if RANK in (-1, 0):
             # Do final val with best.pt
             LOGGER.info(f'\n{epoch - self.start_epoch + 1} epochs completed in '
@@ -423,6 +449,14 @@ class BaseTrainer:
             self.run_callbacks('on_train_end')
         torch.cuda.empty_cache()
         self.run_callbacks('teardown')
+        
+        
+    def eval_func(self,model):
+        with torch.no_grad():
+            for batch_idx, batch in enumerate(self.train_loader):
+                self.loss, self.loss_items = model(batch)
+        return self.loss
+
 
     def save_model(self):
         """Save model training checkpoints with additional metadata."""
