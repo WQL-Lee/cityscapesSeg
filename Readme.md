@@ -206,14 +206,13 @@ python predict.py
 
 - **Backbone**: 这里使用的仍然是CSP的思想，不过将C3模块替换成了`C2f`模块（block数从3-6-9-3改为3-6-6-3），增加了更多的跳跃连接和split操作，实现了进一步的轻量化，同时也保留了SPPF模块。   
  <img src="images/image-20231025031201593.png" alt="image-20231025031201593" style="zoom: 80%;" align="center" /> 
-    
-  
+   
 - **Decoupled-Head**：从耦合头变为了解耦头，分类和回归分为两个分支分别进行；这源于YoloX，即分类与回归两个任务的head不再共享参数      
 
   <img src="images/image-20231025030706883.png" alt="image-20231025030706883" style="zoom: 80%;" align="center" />      
   
 - **匹配策略**：这里正负样本匹配策略采用的是Task-Aligned Assigner，也即对齐分配器，公式如下：        
-$t=s^\alpha \cdot u^\beta$
+  $t=s^\alpha \cdot u^\beta$
   
   - 其中，s是GT的预测分值，u是预测框和GT Box的iou，$\alpha$和$\beta$为权重超参数，两者相乘就可以衡量对齐程度，当Cls的分值越高且IOU越高时，t的值就越接近于1
   
@@ -259,7 +258,24 @@ self.model = quantization.fit(self.model,
                eval_func=self.eval_func
                 )
 ```
+我们在`trainer.py`文件中定义了实现利用neural Compressor的加速代码，如需执行的话，可以将对应的代码进行解注释。
+
+库导入：
+
+<img src="images/import.png" alt="import" style="zoom:80%;" align="left"/>
+
+将模型封装在库neural compressor中：
+
+<img src="images/package1.png" alt="package1" style="zoom: 100%;" align="left" />
+
+<img src="images/package2.png" alt="package2" style="zoom:130%;" align="left"/>
+
+
+
+
+
 ### Neural-Coder————Visual Studio Code Extension
+
 &emsp;&emsp;为了进一步简化开发者的开发流程，Intel推出了一款一键式、无代码解决方案 Intel(R) Neural Coder。 Neural Coder是Neural Compressor下的新组件，通过一键式设备切换和优化启动自动代码更改，无需在深度学习脚本中进行基于CUDA的硬编码便可以进一步简化深度学习模型的部署。这一组件不仅可以优化这些脚本的性能，还能针对这些优化进行基准测试，进而提供合适的部署方案。        
 &emsp;&emsp; Neural Coder采用了静态程序分析技术和启发式优化规则，简化各种深度学习优化api的使用，以提高AI模型的计算效率，改善一般AI客户的用户体验。      Neural-Coder的使用方式通常有以下三种：**Jupyter Lab Extension/Visual Studio Code Extension、Python Launcher、Python API**，这里我们采用了VSCode Extension的方式：       
 
