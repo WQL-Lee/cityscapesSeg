@@ -8,6 +8,6 @@ print(torch.cuda.is_available())
 model = YoloSeg('./yolov8n-seg.pt')  # load a pretrained model (recommended for training)
 
 # Train the model
-results = model.train(data='./cityscapes-seg.yaml', epochs=100, imgsz=640,device=[0,1],batch=64)
+results = model.train(data='./cityscapes-seg.yaml', epochs=100, imgsz=640,batch=64)
 
 # model.val()
